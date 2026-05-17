@@ -10,7 +10,11 @@
       "Bash(mkdir -p dermdiag)",
       "Bash(tar -xzf \"/c/Users/kimho/.claude/projects/C--Users-kimho-OneDrive-Documents-GitHub-KRR/bd050963-4385-4e46-889e-b59f5ca1357a/tool-results/webfetch-1778989842168-altwvk.bin\" -C dermdiag)",
       "Bash(go mod *)",
-      "Bash(go build *)"
+      "Bash(go build *)",
+      "PowerShell(Get-Command *)",
+      "PowerShell(winget install *)",
+      "PowerShell(Test-Path *)",
+      "PowerShell(go *)"
     ]
   }
 }
