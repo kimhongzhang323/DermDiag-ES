@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(frontend-design:frontend-design)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(mkdir -p /tmp/dermdiag)",
+      "Bash(tar -xzf \"C:\\\\Users\\\\kimho\\\\.claude\\\\projects\\\\C--Users-kimho-OneDrive-Documents-GitHub-KRR\\\\bd050963-4385-4e46-889e-b59f5ca1357a\\\\tool-results\\\\webfetch-1778989842168-altwvk.bin\" -C /tmp/dermdiag)",
+      "Read(//tmp/**)",
+      "Read(//c/tmp/**)",
+      "Bash(mkdir -p dermdiag)",
+      "Bash(tar -xzf \"/c/Users/kimho/.claude/projects/C--Users-kimho-OneDrive-Documents-GitHub-KRR/bd050963-4385-4e46-889e-b59f5ca1357a/tool-results/webfetch-1778989842168-altwvk.bin\" -C dermdiag)",
+      "Bash(go mod *)",
+      "Bash(go build *)"
+    ]
+  }
+}

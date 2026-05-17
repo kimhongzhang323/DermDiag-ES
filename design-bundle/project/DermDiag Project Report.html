@@ -1,0 +1,2176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DermDiag ES — WIA2001 Group Project Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f5f1ea;
+    --bg-2: #ebe5da;
+    --paper: #fbf8f3;
+    --ink: #1b1a17;
+    --ink-2: #3a3733;
+    --ink-3: #6b6660;
+    --line: #cdc6bb;
+    --line-2: #ddd5c8;
+    --accent: oklch(0.52 0.06 165);     /* muted sage */
+    --accent-soft: oklch(0.92 0.03 165);
+    --warn: oklch(0.58 0.10 35);         /* clay */
+    --warn-soft: oklch(0.94 0.04 40);
+    --max: 1280px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  .serif { font-family: "Newsreader", "Iowan Old Style", Georgia, serif; }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(245, 241, 234, 0.86);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+    font-family: "Newsreader", serif;
+    font-weight: 500;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+  .brand-mark {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 30%, oklch(0.78 0.07 165) 0%, oklch(0.45 0.07 165) 60%, oklch(0.32 0.05 165) 100%);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+  }
+  .topnav {
+    display: flex; gap: 22px;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .topnav a {
+    color: inherit; text-decoration: none;
+    padding: 4px 0;
+    border-bottom: 1px solid transparent;
+    transition: border-color .15s, color .15s;
+  }
+  .topnav a:hover { color: var(--ink); border-bottom-color: var(--ink-2); }
+  .topnav .mono { font-size: 12px; }
+  .topright {
+    font-size: 12px; color: var(--ink-3);
+    font-family: "IBM Plex Mono", monospace;
+  }
+  .topright b { color: var(--ink); font-weight: 500; }
+
+  /* ---------- Layout ---------- */
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+  section { padding: 96px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 28px;
+  }
+  .eyebrow::before {
+    content: "";
+    display: inline-block;
+    width: 28px; height: 1px;
+    background: var(--ink-3);
+  }
+  .section-head {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 64px;
+    margin-bottom: 56px;
+    align-items: start;
+  }
+  .section-head .index {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
+    padding-top: 10px;
+    border-top: 1px solid var(--ink);
+  }
+  .section-head h2 {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 16px 0;
+    color: var(--ink);
+    text-wrap: pretty;
+  }
+  .section-head .lede {
+    font-family: "Newsreader", serif;
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    max-width: 60ch;
+    font-weight: 300;
+    text-wrap: pretty;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    padding: 120px 0 80px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 64px;
+    align-items: end;
+  }
+  .hero-meta {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-3);
+    display: flex; gap: 24px; flex-wrap: wrap;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-meta span b { color: var(--ink); font-weight: 500; }
+  .hero h1 {
+    font-family: "Newsreader", serif;
+    font-weight: 300;
+    font-size: clamp(56px, 9vw, 124px);
+    line-height: 0.96;
+    letter-spacing: -0.035em;
+    margin: 0 0 28px 0;
+    color: var(--ink);
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .hero-sub {
+    font-family: "Newsreader", serif;
+    font-size: 22px;
+    line-height: 1.45;
+    color: var(--ink-2);
+    max-width: 56ch;
+    font-weight: 300;
+  }
+
+  .hero-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 28px;
+    border-radius: 4px;
+  }
+  .hero-card h4 {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 18px 0;
+    font-weight: 500;
+  }
+  .roster {
+    display: grid;
+    gap: 10px;
+  }
+  .roster-row {
+    display: grid;
+    grid-template-columns: 1fr 110px;
+    gap: 16px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--line-2);
+    font-size: 14px;
+  }
+  .roster-row:last-child { border-bottom: none; }
+  .roster-row .matric {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-3);
+    text-align: right;
+  }
+  .hero-card-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line-2);
+    font-size: 13px;
+  }
+  .hero-card-row > div .lbl {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 4px;
+  }
+
+  .hero-strip {
+    margin-top: 64px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--ink);
+  }
+  .hero-stat {
+    padding: 22px 24px 22px 0;
+    border-right: 1px solid var(--line);
+  }
+  .hero-stat:last-child { border-right: none; }
+  .hero-stat .num {
+    font-family: "Newsreader", serif;
+    font-size: 44px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    font-weight: 400;
+  }
+  .hero-stat .num em { color: var(--accent); font-style: normal; }
+  .hero-stat .lbl {
+    margin-top: 8px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* ---------- Prose ---------- */
+  .prose p {
+    font-size: 16.5px;
+    line-height: 1.7;
+    color: var(--ink-2);
+    max-width: 68ch;
+    margin: 0 0 18px 0;
+    text-wrap: pretty;
+  }
+  .prose p:first-child::first-letter {
+    font-family: "Newsreader", serif;
+    font-size: 64px;
+    line-height: 0.85;
+    float: left;
+    padding: 6px 10px 0 0;
+    color: var(--ink);
+    font-weight: 400;
+  }
+  .prose .nodrop p:first-child::first-letter {
+    font-size: inherit; float: none; padding: 0; font-family: inherit;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; }
+  .two-col-asym { display: grid; grid-template-columns: 1.3fr 1fr; gap: 56px; }
+
+  /* ---------- Objectives ---------- */
+  .obj-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .obj-card {
+    background: var(--paper);
+    padding: 28px 26px;
+    display: flex; flex-direction: column;
+    min-height: 220px;
+  }
+  .obj-card .num {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+  }
+  .obj-card h3 {
+    font-family: "Newsreader", serif;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin: 0 0 12px 0;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .obj-card p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .obj-card .sdg {
+    margin-top: auto;
+    padding-top: 18px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+  }
+
+  /* ---------- Lit review table ---------- */
+  .lit-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .lit-table th, .lit-table td {
+    text-align: left;
+    padding: 18px 20px;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .lit-table th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    background: var(--bg-2);
+    font-weight: 500;
+  }
+  .lit-table tr:last-child td { border-bottom: none; }
+  .lit-table tr.highlight td {
+    background: var(--accent-soft);
+  }
+  .lit-table .author {
+    font-family: "Newsreader", serif;
+    font-size: 17px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .lit-table .arch {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .lit-table .strength { color: var(--ink-2); }
+  .lit-table .strength b { color: var(--accent); font-weight: 500; }
+  .lit-table .limit { color: var(--ink-3); }
+  .lit-table .limit b { color: var(--warn); font-weight: 500; }
+
+  .gap-grid {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .gap-card {
+    border-top: 1px solid var(--ink);
+    padding-top: 18px;
+  }
+  .gap-card .lbl {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--warn);
+    margin-bottom: 10px;
+  }
+  .gap-card h4 {
+    font-family: "Newsreader", serif;
+    font-size: 19px;
+    font-weight: 400;
+    margin: 0 0 8px 0;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .gap-card p {
+    font-size: 13.5px;
+    color: var(--ink-2);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* ---------- Domain conditions ---------- */
+  .conditions {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-top: 32px;
+  }
+  .cond {
+    background: var(--paper);
+    padding: 24px 20px;
+    min-height: 150px;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .cond .id {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .cond h4 {
+    font-family: "Newsreader", serif;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin: 0 0 8px 0;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .cond p {
+    font-size: 12.5px;
+    color: var(--ink-3);
+    margin: 0;
+    line-height: 1.45;
+  }
+  .cond.featured { background: var(--accent-soft); }
+  .cond.featured h4 { color: var(--ink); }
+
+  .scenario {
+    margin-top: 56px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 40px 44px;
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 48px;
+  }
+  .scenario .lbl {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .scenario h3 {
+    font-family: "Newsreader", serif;
+    font-size: 26px;
+    font-weight: 400;
+    margin: 6px 0 0 0;
+    letter-spacing: -0.01em;
+  }
+  .scenario-flow {
+    display: grid;
+    gap: 14px;
+  }
+  .scenario-step {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed var(--line-2);
+  }
+  .scenario-step:last-child { border-bottom: none; }
+  .scenario-step .n {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--accent);
+    padding-top: 3px;
+  }
+  .scenario-step .t { color: var(--ink-2); font-size: 14.5px; line-height: 1.5; }
+  .scenario-step .t b { color: var(--ink); font-weight: 500; }
+
+  /* ---------- SME ---------- */
+  .sme-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+  }
+  .sme-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 36px;
+  }
+  .sme-card h3 {
+    font-family: "Newsreader", serif;
+    font-size: 24px;
+    font-weight: 400;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.01em;
+  }
+  .sme-card .role {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .sme-card ul {
+    margin: 0; padding: 0; list-style: none;
+  }
+  .sme-card li {
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--line-2);
+    font-size: 14.5px;
+    color: var(--ink-2);
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 12px;
+  }
+  .sme-card li:last-child { border-bottom: none; }
+  .sme-card li .mark {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    padding-top: 4px;
+  }
+
+  .qa-list {
+    display: grid;
+    gap: 18px;
+  }
+  .qa {
+    border-left: 2px solid var(--accent);
+    padding: 4px 0 4px 18px;
+  }
+  .qa .q {
+    font-family: "Newsreader", serif;
+    font-size: 17px;
+    color: var(--ink);
+    margin: 0;
+    line-height: 1.45;
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  /* ---------- Architecture ---------- */
+  .arch-stage {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 56px;
+    margin-top: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .arch-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--line-2) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-2) 1px, transparent 1px);
+    background-size: 32px 32px;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .arch-diagram {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    align-items: stretch;
+  }
+  .arch-node {
+    background: var(--bg);
+    border: 1px solid var(--ink);
+    padding: 22px;
+    border-radius: 4px;
+    position: relative;
+    z-index: 2;
+  }
+  .arch-node .tag {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .arch-node h4 {
+    font-family: "Newsreader", serif;
+    font-size: 19px;
+    font-weight: 500;
+    margin: 0 0 10px 0;
+    letter-spacing: -0.01em;
+  }
+  .arch-node p {
+    font-size: 13px;
+    color: var(--ink-2);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .arch-node.accent {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  .arch-node.accent .tag { color: var(--accent); }
+
+  .arch-row { display: contents; }
+  .arch-link {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-3);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .arch-flow-vertical {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    position: relative;
+  }
+  .arch-step {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 18px 16px;
+    border-radius: 4px;
+    position: relative;
+    z-index: 2;
+  }
+  .arch-step .n {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .arch-step h5 {
+    font-family: "Newsreader", serif;
+    font-size: 15px;
+    font-weight: 500;
+    margin: 0 0 6px 0;
+    line-height: 1.2;
+  }
+  .arch-step p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--ink-3);
+    line-height: 1.4;
+  }
+
+  .rule-box {
+    margin-top: 32px;
+    background: var(--ink);
+    color: #ece6db;
+    padding: 28px 32px;
+    border-radius: 4px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-x: auto;
+  }
+  .rule-box .kw { color: oklch(0.8 0.12 165); }
+  .rule-box .str { color: oklch(0.85 0.10 70); }
+  .rule-box .com { color: #8a847a; font-style: italic; }
+  .rule-box .lbl {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #8a847a;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Implementation ---------- */
+  .impl-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .impl-table th, .impl-table td {
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 1px solid var(--line-2);
+    vertical-align: top;
+  }
+  .impl-table th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    background: var(--bg-2);
+    font-weight: 500;
+  }
+  .impl-table tr:last-child td { border-bottom: none; }
+  .impl-table .component {
+    font-family: "Newsreader", serif;
+    font-size: 17px;
+    color: var(--ink);
+    font-weight: 500;
+    width: 22%;
+  }
+  .impl-table .tool {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    color: var(--accent);
+    width: 26%;
+  }
+  .impl-table .purpose { color: var(--ink-2); }
+
+  .impl-advantages {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .impl-adv {
+    background: var(--paper);
+    padding: 24px;
+  }
+  .impl-adv .num {
+    font-family: "Newsreader", serif;
+    font-size: 32px;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .impl-adv h5 {
+    font-family: "Newsreader", serif;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 6px 0;
+    color: var(--ink);
+  }
+  .impl-adv p {
+    font-size: 13px;
+    color: var(--ink-2);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* ---------- Gantt ---------- */
+  .gantt {
+    margin-top: 16px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 32px;
+    border-radius: 4px;
+  }
+  .gantt-header {
+    display: grid;
+    grid-template-columns: 220px repeat(13, 1fr);
+    gap: 4px;
+    margin-bottom: 16px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
+  }
+  .gantt-header .first { color: transparent; }
+  .gantt-header span {
+    text-align: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .gantt-row {
+    display: grid;
+    grid-template-columns: 220px repeat(13, 1fr);
+    gap: 4px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--line-2);
+  }
+  .gantt-row:last-child { border-bottom: none; }
+  .gantt-row .task {
+    font-size: 13.5px;
+    color: var(--ink-2);
+    padding-right: 12px;
+  }
+  .gantt-row .task .owner {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+  }
+  .gantt-cell {
+    height: 22px;
+    border-radius: 2px;
+    background: transparent;
+  }
+  .gantt-cell.fill { background: var(--accent); }
+  .gantt-cell.fade { background: oklch(0.78 0.04 165); }
+  .gantt-cell.warn { background: var(--warn); }
+  .gantt-cell.milestone {
+    background: var(--ink);
+    width: 14px;
+    height: 14px;
+    margin: 4px auto;
+    transform: rotate(45deg);
+  }
+
+  /* ---------- Testing ---------- */
+  .testing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .test-card {
+    border-top: 1px solid var(--ink);
+    padding-top: 20px;
+  }
+  .test-card .lbl {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .test-card h4 {
+    font-family: "Newsreader", serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin: 0 0 10px 0;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .test-card p {
+    font-size: 13.5px;
+    color: var(--ink-2);
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  /* ---------- Results ---------- */
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 56px;
+  }
+  .result-stat {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 28px 24px;
+  }
+  .result-stat .num {
+    font-family: "Newsreader", serif;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--ink);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .result-stat .num .unit {
+    font-size: 24px;
+    color: var(--ink-3);
+    margin-left: 4px;
+  }
+  .result-stat .lbl {
+    margin-top: 12px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .result-stat p {
+    margin: 14px 0 0 0;
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.5;
+    padding-top: 14px;
+    border-top: 1px solid var(--line-2);
+  }
+
+  .sl-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+  }
+  .sl-block h4 {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 0 0 18px 0;
+    color: var(--ink-3);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .sl-block.s h4 { color: var(--accent); border-bottom-color: var(--accent); }
+  .sl-block.l h4 { color: var(--warn); border-bottom-color: var(--warn); }
+  .sl-block ul { margin: 0; padding: 0; list-style: none; }
+  .sl-block li {
+    padding: 14px 0;
+    border-bottom: 1px dashed var(--line-2);
+    font-size: 14.5px;
+    color: var(--ink-2);
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 12px;
+    line-height: 1.55;
+  }
+  .sl-block li:last-child { border-bottom: none; }
+  .sl-block li .mk {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    padding-top: 4px;
+  }
+  .sl-block.s li .mk { color: var(--accent); }
+  .sl-block.l li .mk { color: var(--warn); }
+
+  /* ---------- Future ---------- */
+  .future-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .future-card {
+    background: var(--paper);
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 24px;
+  }
+  .future-card .num {
+    font-family: "Newsreader", serif;
+    font-size: 28px;
+    color: var(--accent);
+    line-height: 1;
+    font-weight: 400;
+  }
+  .future-card h4 {
+    font-family: "Newsreader", serif;
+    font-size: 19px;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.01em;
+  }
+  .future-card p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ink-2);
+    line-height: 1.55;
+  }
+
+  .conclusion {
+    margin-top: 64px;
+    background: var(--ink);
+    color: #ece6db;
+    padding: 56px;
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 48px;
+  }
+  .conclusion .lbl {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: oklch(0.78 0.07 165);
+    text-transform: uppercase;
+  }
+  .conclusion p {
+    font-family: "Newsreader", serif;
+    font-size: 22px;
+    line-height: 1.5;
+    margin: 0 0 16px 0;
+    font-weight: 300;
+    color: #ece6db;
+    text-wrap: pretty;
+  }
+  .conclusion p:last-child { margin-bottom: 0; }
+  .conclusion em { color: oklch(0.85 0.08 165); font-style: italic; }
+
+  /* ---------- References ---------- */
+  .refs ol {
+    margin: 0; padding: 0;
+    list-style: none;
+    columns: 2;
+    column-gap: 56px;
+  }
+  .refs li {
+    break-inside: avoid;
+    padding: 14px 0;
+    border-bottom: 1px dashed var(--line-2);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 10px;
+  }
+  .refs li .n {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .refs li i { font-style: italic; }
+
+  /* ---------- Footer ---------- */
+  footer {
+    padding: 64px 0 48px;
+    border-top: 1px solid var(--ink);
+    background: var(--bg-2);
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 32px;
+  }
+  .footer-grid h5 {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 14px 0;
+    font-weight: 500;
+  }
+  .footer-grid p, .footer-grid li {
+    font-size: 13px;
+    color: var(--ink-2);
+    margin: 0 0 6px 0;
+    line-height: 1.5;
+  }
+  .footer-grid ul { margin: 0; padding: 0; list-style: none; }
+  .footer-bottom {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1024px) {
+    .topnav { display: none; }
+    .section-head { grid-template-columns: 1fr; gap: 16px; }
+    .hero-grid, .two-col, .two-col-asym, .sme-grid, .sl-grid { grid-template-columns: 1fr; gap: 40px; }
+    .obj-grid, .gap-grid, .conditions, .testing-grid, .results-grid, .future-grid, .impl-advantages {
+      grid-template-columns: 1fr 1fr;
+    }
+    .arch-diagram, .arch-flow-vertical { grid-template-columns: 1fr 1fr; }
+    .refs ol { columns: 1; }
+    .gantt-header, .gantt-row { grid-template-columns: 140px repeat(13, 1fr); }
+    .hero-strip { grid-template-columns: 1fr 1fr; }
+    .scenario, .conclusion { grid-template-columns: 1fr; gap: 24px; padding: 32px; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .wrap, .topbar-inner { padding-left: 20px; padding-right: 20px; }
+    .obj-grid, .gap-grid, .conditions, .testing-grid, .results-grid, .future-grid, .impl-advantages, .arch-diagram, .arch-flow-vertical, .footer-grid {
+      grid-template-columns: 1fr;
+    }
+    .hero-strip { grid-template-columns: 1fr; }
+    .gantt { overflow-x: auto; }
+    .gantt-header, .gantt-row { min-width: 720px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ TOP NAV ============ -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <span>DermDiag<span style="color: var(--ink-3); font-weight: 300;"> · ES</span></span>
+    </div>
+    <nav class="topnav">
+      <a href="#intro"><span class="mono">01</span> Intro</a>
+      <a href="#objective"><span class="mono">02</span> Objectives</a>
+      <a href="#literature"><span class="mono">03</span> Literature</a>
+      <a href="#domain"><span class="mono">04</span> Domain</a>
+      <a href="#sme"><span class="mono">05</span> Expert</a>
+      <a href="#architecture"><span class="mono">06</span> Architecture</a>
+      <a href="#implementation"><span class="mono">07</span> Build</a>
+      <a href="#gantt"><span class="mono">08</span> Plan</a>
+      <a href="#testing"><span class="mono">09</span> Test</a>
+      <a href="#results"><span class="mono">10</span> Results</a>
+      <a href="#future"><span class="mono">11</span> Future</a>
+    </nav>
+    <div class="topright">OCC&nbsp;<b>10</b></div>
+  </div>
+</div>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-meta">
+      <span>COURSE&nbsp;&nbsp;<b>WIA2001</b></span>
+      <span>SEM&nbsp;&nbsp;<b>2 · 2025/2026</b></span>
+      <span>GROUP&nbsp;&nbsp;<b>OCC 10</b></span>
+      <span>LECTURER&nbsp;&nbsp;<b>Dr. Shapla Khanam</b></span>
+      <span>WEIGHT&nbsp;&nbsp;<b>20%</b></span>
+      <span>SDG&nbsp;&nbsp;<b>03 · Good Health &amp; Well-being</b></span>
+    </div>
+
+    <div class="hero-grid">
+      <div>
+        <h1>Derm<em>Diag</em><br>Expert&nbsp;System.</h1>
+        <p class="hero-sub">
+          A rule-based, forward-chaining diagnostic prototype for the preliminary triage
+          of common dermatological conditions — built for transparency, low-resource access,
+          and patient education.
+        </p>
+      </div>
+
+      <aside class="hero-card">
+        <h4>Group OCC 10 · Roster</h4>
+        <div class="roster">
+          <div class="roster-row"><span>Kim Hong Zhang</span><span class="matric">23096158</span></div>
+          <div class="roster-row"><span>Brayden Chong Jie Rui</span><span class="matric">23096507</span></div>
+          <div class="roster-row"><span>Kuan Nim Joe</span><span class="matric">23121847</span></div>
+          <div class="roster-row"><span>Lee Zhen Xue</span><span class="matric">24004491</span></div>
+          <div class="roster-row"><span>Tan Hao Yang</span><span class="matric">24068638</span></div>
+          <div class="roster-row"><span>Edmond Lee Jun Xiang</span><span class="matric">23113468</span></div>
+        </div>
+        <div class="hero-card-row">
+          <div><span class="lbl">Deliverable</span>Slide Report</div>
+          <div><span class="lbl">Due</span>Week 11 · Mon</div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="hero-strip">
+      <div class="hero-stat">
+        <div class="num">10<em>–12</em></div>
+        <div class="lbl">High-Prevalence Conditions</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">≥ 80<em>%</em></div>
+        <div class="lbl">Target Diagnostic Accuracy</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">~100</div>
+        <div class="lbl">Production Rules</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">SDG&nbsp;<em>3</em></div>
+        <div class="lbl">Good Health &amp; Well-being</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 01 INTRODUCTION ============ -->
+<section id="intro">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="index">§ 01 / Introduction</div>
+      <div>
+        <div class="eyebrow">Context</div>
+        <h2>Skin disease is everywhere — dermatologists are not.</h2>
+        <p class="lede">
+          DermDiag ES is a rule-based expert system prototype that uses symptom-based
+          reasoning, patient history, and basic visual descriptors to suggest possible
+          diagnoses with confidence levels, recommendations, and transparent explanations.
+        </p>
+      </div>
+    </div>
+    <div class="two-col prose">
+      <div>
+        <p>
+          Skin diseases rank among the most common health issues worldwide, impacting
+          quality of life, productivity, and healthcare systems. In many regions access
+          to dermatologists is limited, leading to delayed diagnosis, misdiagnosis, or
+          inappropriate self-treatment.
+        </p>
+        <p class="nodrop">
+          DermDiag ES targets common conditions such as eczema and dermatitis, psoriasis,
+          acne, fungal infections (tinea), melasma, and others. Rather than replacing
+          professional medical advice, it emphasises <em>education and triage</em> — getting
+          the right person to the right level of care, faster.
+        </p>
+      </div>
+      <div>
+        <p class="nodrop">
+          The project aligns with <b>Sustainable Development Goal 3</b> by democratising
+          access to dermatological knowledge, enabling earlier intervention, and reducing
+          burden on specialists. It is designed for primary-care providers, community
+          health workers, and patients in underserved or rural settings.
+        </p>
+        <p class="nodrop">
+          Every output is paired with a clear disclaimer: this prototype supports — but
+          does not substitute — consultation with a qualified dermatologist.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 OBJECTIVES ============ -->
+<section id="objective">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="index">§ 02 / Objective</div>
+      <div>
+        <div class="eyebrow">What we set out to do</div>
+        <h2>Seven concrete goals.</h2>
+        <p class="lede">
+          Each objective maps to one of the three pillars of an expert system —
+          knowledge, reasoning, or interaction — and each is testable.
+        </p>
+      </div>
+    </div>
+
+    <div class="obj-grid">
+      <div class="obj-card">
+        <div class="num">OBJ — 01</div>
+        <h3>Functional prototype</h3>
+        <p>Build a working ES with KB, Inference Engine, and UI for diagnosing common dermatological conditions from user-input symptoms and descriptors.</p>
+        <div class="sdg">Core Deliverable</div>
+      </div>
+      <div class="obj-card">
+        <div class="num">OBJ — 02</div>
+        <h3>Authentic knowledge elicitation</h3>
+        <p>Demonstrate structured knowledge elicitation from a real human expert — a dermatologist or medical professor — through formal interviews and case validation.</p>
+        <div class="sdg">Expert Validation</div>
+      </div>
+      <div class="obj-card">
+        <div class="num">OBJ — 03</div>
+        <h3>≥ 80% diagnostic accuracy</h3>
+        <p>Achieve a preliminary diagnostic accuracy of at least 80% on curated test cases for 10 high-prevalence skin conditions.</p>
+        <div class="sdg">Quality Threshold</div>
+      </div>
+      <div class="obj-card">
+        <div class="num">OBJ — 04</div>
+        <h3>Awareness &amp; early detection</h3>
+        <p>Promote awareness of skin diseases and support early detection, contributing directly to SDG 3 — Good Health &amp; Well-being.</p>
+        <div class="sdg">SDG 3 Alignment</div>
+      </div>
+      <div class="obj-card">
+        <div class="num">OBJ — 05</div>
+        <h3>Usability with end-users</h3>
+        <p>Evaluate usability with end-users (students, GPs, simulated patients) and validate clinical reasoning with domain experts.</p>
+        <div class="sdg">User Validation</div>
+      </div>
+      <div class="obj-card">
+        <div class="num">OBJ — 06</div>
+        <h3>Forward chaining + CF</h3>
+        <p>Model and represent dermatological triage heuristics using forward-chaining rules and Certainty Factors to manage symptom uncertainty effectively.</p>
+        <div class="sdg">Method</div>
+      </div>
+      <div class="obj-card">
+        <div class="num">OBJ — 07</div>
+        <h3>Future-proofed</h3>
+        <p>Explore scalability paths — image integration, multilingual support, mobile deployment — so the prototype can grow into a real tool.</p>
+        <div class="sdg">Roadmap</div>
+      </div>
+      <div class="obj-card" style="background: var(--ink); color: #ece6db;">
+        <div class="num" style="color: oklch(0.85 0.08 165);">SDG — 03</div>
+        <h3 style="color: #ece6db;">Good Health &amp; Well-being</h3>
+        <p style="color: oklch(0.78 0.02 60);">
+          Democratise access to dermatological knowledge, reduce specialist burden,
+          empower patients and non-specialist clinicians.
+        </p>
+        <div class="sdg" style="color: oklch(0.78 0.07 165);">United Nations · 2030 Agenda</div>
+      </div>
+      <div class="obj-card">
+        <div class="num">OBJ — N</div>
+        <h3>Explainable by default</h3>
+        <p>Every diagnosis must be paired with the chain of fired rules that produced it — supporting clinician trust and patient education.</p>
+        <div class="sdg">Trust Layer</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 LITERATURE REVIEW ============ -->
+<section id="literature">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="index">§ 03 / Literature Review</div>
+      <div>
+        <div class="eyebrow">Where DermDiag sits in the field</div>
+        <h2>Classical ES, deep learning, and the gap in between.</h2>
+        <p class="lede">
+          Skin disease has been a fertile testing ground for AI since the 2010s.
+          Rule-based systems were foundational; CNNs now dominate the literature.
+          DermDiag deliberately revisits the rule-based core — for transparency,
+          accessibility, and explainability.
+        </p>
+      </div>
+    </div>
+
+    <div class="prose" style="margin-bottom: 48px;">
+      <p>
+        Early systems used <b>IF-THEN production rules</b> drawn from expert interviews,
+        often implemented in CLIPS. A 2016 study by Jeddi et al. reached <b>97.1% accuracy</b>,
+        <b>97.5% sensitivity</b>, and <b>96.5% specificity</b> on complex conditions like
+        pemphigus vulgaris, basal cell carcinoma, and melanoma, with Kappa 93.6% expert
+        agreement. Munaiseche et al. (2018/2020) built a web-based forward-chaining system
+        covering 15 diseases with 54 symptoms and 15 rules — a clear precedent for our work.
+      </p>
+      <p class="nodrop">
+        The field has since shifted toward <b>Convolutional Neural Networks</b>. Esteva et
+        al. (2017, Stanford) trained a CNN on ~130,000 images and matched dermatologists at
+        skin-cancer classification. Recent foundation models like PanDerm (trained on
+        &gt;2 million images) show 10–16% gains in early melanoma detection. AI sensitivity
+        for fungal detection now reaches 99.5%; explainable concept-based models improve
+        dermatologist accuracy by ~2.8%.
+      </p>
+    </div>
+
+    <table class="lit-table">
+      <thead>
+        <tr>
+          <th>System / Author</th>
+          <th>Architecture &amp; Reasoning</th>
+          <th>Strengths</th>
+          <th>Limitations</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="author">Jeddi et al.<br><span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-3); font-weight: 400;">2016</span></td>
+          <td class="arch">Classical ES — Production rules, forward chaining</td>
+          <td class="strength"><b>High expert agreement</b> (Kappa 93.6%); strong on complex cases.</td>
+          <td class="limit"><b>Rigid logic</b>; struggles with highly uncertain inputs.</td>
+        </tr>
+        <tr>
+          <td class="author">Esteva et al.<br><span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-3); font-weight: 400;">2017, Stanford</span></td>
+          <td class="arch">Deep learning — CNN weights (non-symbolic)</td>
+          <td class="strength"><b>Matches specialist visual accuracy</b> on curated datasets.</td>
+          <td class="limit"><b>Black-box reasoning</b>; needs high-quality photos.</td>
+        </tr>
+        <tr>
+          <td class="author">Munaiseche et al.<br><span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-3); font-weight: 400;">2018 / 2020</span></td>
+          <td class="arch">Web-based ES — Forward chaining (15 rules)</td>
+          <td class="strength"><b>Accessible UI</b> for non-specialists; lightweight stack.</td>
+          <td class="limit"><b>Very limited scope</b>; no uncertainty handling.</td>
+        </tr>
+        <tr class="highlight">
+          <td class="author">DermDiag ES<br><span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--accent); font-weight: 500;">PROPOSED · 2026</span></td>
+          <td class="arch">Hybrid rule-based — Forward chaining + Certainty Factors</td>
+          <td class="strength"><b>Highly explainable</b>; handles uncertain symptom input; symptom-first.</td>
+          <td class="limit"><b>Text input initially</b>; image module is future work.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top: 56px;">
+      <div class="eyebrow" style="margin-bottom: 18px;">Gaps DermDiag is positioned to fill</div>
+      <div class="gap-grid">
+        <div class="gap-card">
+          <div class="lbl">Gap 01</div>
+          <h4>Black-box nature</h4>
+          <p>Many CNNs lack transparent reasoning, reducing clinician trust. DermDiag explains every fired rule.</p>
+        </div>
+        <div class="gap-card">
+          <div class="lbl">Gap 02</div>
+          <h4>Hardware dependency</h4>
+          <p>Image-first systems need good cameras and lighting — a barrier in low-resource or rural areas.</p>
+        </div>
+        <div class="gap-card">
+          <div class="lbl">Gap 03</div>
+          <h4>Data bias</h4>
+          <p>Most datasets under-represent darker skin tones (Fitzpatrick IV–VI), hurting generalisability.</p>
+        </div>
+        <div class="gap-card">
+          <div class="lbl">Gap 04</div>
+          <h4>Narrow scope</h4>
+          <p>Cancer-focused tools dominate; fewer offer triage for common inflammatory or infectious conditions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04 DOMAIN ============ -->
+<section id="domain">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="index">§ 04 / Specific Domain</div>
+      <div>
+        <div class="eyebrow">A focused, high-impact slice</div>
+        <h2>Triage for the ten conditions you'll actually see.</h2>
+        <p class="lede">
+          Per the Global Burden of Disease Study 2021, there were 4.69–4.86 billion incident
+          cases of skin disease worldwide — the third most common condition overall.
+          Most of that burden lives in a small set of repeat offenders.
+        </p>
+      </div>
+    </div>
+
+    <div class="conditions">
+      <div class="cond featured">
+        <div class="id">D · 01</div>
+        <h4>Acne Vulgaris</h4>
+        <p>Most common in adolescents and young adults.</p>
+      </div>
+      <div class="cond">
+        <div class="id">D · 02</div>
+        <h4>Atopic Dermatitis</h4>
+        <p>Itchy, dry, inflamed — flexural distribution.</p>
+      </div>
+      <div class="cond">
+        <div class="id">D · 03</div>
+        <h4>Psoriasis</h4>
+        <p>Scaly, red, well-demarcated plaques.</p>
+      </div>
+      <div class="cond featured">
+        <div class="id">D · 04</div>
+        <h4>Tinea / Fungal</h4>
+        <p>Corporis, versicolor, athlete's foot.</p>
+      </div>
+      <div class="cond">
+        <div class="id">D · 05</div>
+        <h4>Rosacea</h4>
+        <p>Central facial redness with papules.</p>
+      </div>
+      <div class="cond">
+        <div class="id">D · 06</div>
+        <h4>Urticaria</h4>
+        <p>Hives — transient, intensely itchy wheals.</p>
+      </div>
+      <div class="cond featured">
+        <div class="id">D · 07</div>
+        <h4>Melasma</h4>
+        <p>Symmetric facial hyperpigmentation.</p>
+      </div>
+      <div class="cond">
+        <div class="id">D · 08</div>
+        <h4>Scabies</h4>
+        <p>Burrows, severe nocturnal itch.</p>
+      </div>
+      <div class="cond">
+        <div class="id">D · 09</div>
+        <h4>Seborrheic Dermatitis</h4>
+        <p>Greasy scale on scalp, face, chest.</p>
+      </div>
+      <div class="cond">
+        <div class="id">D · 10</div>
+        <h4>Contact Dermatitis</h4>
+        <p>Irritant or allergen contact pattern.</p>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div>
+        <div class="lbl">Unique Use-Case</div>
+        <h3>The remote-clinic scenario.</h3>
+        <p style="font-size: 14px; color: var(--ink-3); margin-top: 14px; line-height: 1.55;">
+          A patient in a rural area, or a GP without immediate dermatology access, opens
+          DermDiag and answers a guided questionnaire.
+        </p>
+      </div>
+      <div class="scenario-flow">
+        <div class="scenario-step">
+          <div class="n">01</div>
+          <div class="t">User selects symptoms via a <b>guided questionnaire</b> — itch? scale? location? duration?</div>
+        </div>
+        <div class="scenario-step">
+          <div class="n">02</div>
+          <div class="t">System generates a <b>ranked differential diagnosis</b> with confidence scores via Certainty Factors.</div>
+        </div>
+        <div class="scenario-step">
+          <div class="n">03</div>
+          <div class="t">Provides <b>self-care recommendations</b>, OTC options, and lifestyle advice for mild cases.</div>
+        </div>
+        <div class="scenario-step">
+          <div class="n">04</div>
+          <div class="t"><b>Flags red-flag conditions</b> — potential cancer indicators, widespread infection, systemic involvement.</div>
+        </div>
+        <div class="scenario-step">
+          <div class="n">05</div>
+          <div class="t">Delivers a <b>transparent rule trace</b> — exactly which IF-THEN rules fired and why.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 SME ============ -->
+<section id="sme">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="index">§ 05 / Subject Matter Expert</div>
+      <div>
+        <div class="eyebrow">Where the knowledge comes from</div>
+        <h2>A real dermatologist — and a deeply-read student DE behind them.</h2>
+        <p class="lede">
+          Knowledge elicitation runs in two parallel streams: structured interviews with a
+          board-certified dermatologist, and a student Domain Expert grounding the work in
+          authoritative references.
+        </p>
+      </div>
+    </div>
+
+    <div class="sme-grid">
+      <div class="sme-card">
+        <div class="role">Lead Expert · External Validation</div>
+        <h3>Board-certified Dermatologist</h3>
+        <ul>
+          <li><span class="mark">→</span><span><b>10+ years</b> clinical experience in general dermatology, inflammatory skin diseases, and tropical / infectious dermatoses.</span></li>
+          <li><span class="mark">→</span><span>Affiliation with a local medical faculty or hospital dermatology department.</span></li>
+          <li><span class="mark">→</span><span>Validates rule sets, reviews curated test cases, and provides feedback on system outputs.</span></li>
+          <li><span class="mark">→</span><span>Engagement protocol: formal introduction letter → structured interviews → questionnaire scoring → validation workshop.</span></li>
+        </ul>
+      </div>
+
+      <div class="sme-card">
+        <div class="role">Student Domain Expert · Internal Depth</div>
+        <h3>References &amp; matrix-building</h3>
+        <ul>
+          <li><span class="mark">→</span><span>Studies <em>Fitzpatrick's Dermatology</em>, <em>Rook's Textbook</em>, WHO / CDC skin disease guidelines, and AAD resources.</span></li>
+          <li><span class="mark">→</span><span>Compiles symptom–disease matrices and initial rule sets for the KB.</span></li>
+          <li><span class="mark">→</span><span>Deepens grasp of pathophysiology, differential diagnosis, and evidence-based management.</span></li>
+          <li><span class="mark">→</span><span>Collaborates with the End-User representative to ensure plain-language outputs for patients.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top: 64px;">
+      <div class="eyebrow">Sample elicitation questions</div>
+      <div class="qa-list">
+        <div class="qa"><p class="q">"What are the most common presenting symptoms for each target disease, and which are the differentiators?"</p></div>
+        <div class="qa"><p class="q">"What red-flag symptoms would prompt immediate referral to a specialist?"</p></div>
+        <div class="qa"><p class="q">"How do you differentiate overlapping conditions — tinea vs. eczema vs. psoriasis?"</p></div>
+        <div class="qa"><p class="q">"Which patient-history factors (age, occupation, travel, allergies, family history) are most critical?"</p></div>
+        <div class="qa"><p class="q">"How do you assign relative importance — or certainty — to symptoms when information is incomplete?"</p></div>
+        <div class="qa"><p class="q">"Can you walk through your diagnostic reasoning for a patient with facial redness and scaling?"</p></div>
+      </div>
+    </div>
+
+    <div style="margin-top: 56px; padding: 28px 32px; background: var(--warn-soft); border-left: 3px solid var(--warn);">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warn); margin-bottom: 8px;">Ethical Notice</div>
+      <p style="margin: 0; font-size: 15px; line-height: 1.55; color: var(--ink-2); max-width: 80ch;">
+        DermDiag ES is for <b>educational and triage purposes only</b> and is not a substitute
+        for professional medical diagnosis. All outputs include disclaimers recommending
+        consultation with a qualified dermatologist.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 ARCHITECTURE ============ -->
+<section id="architecture">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="index">§ 06 / Architecture</div>
+      <div>
+        <div class="eyebrow">Method &amp; Solution</div>
+        <h2>Five components. Forward-chained. Explainable end-to-end.</h2>
+        <p class="lede">
+          A classic rule-based design, modernised with a web stack. Facts enter from the
+          UI, flow into Working Memory, are matched against the Knowledge Base by the
+          Inference Engine, and exit as a diagnosis with a complete reasoning trace.
+        </p>
+      </div>
+    </div>
+
+    <div class="arch-stage">
+      <div class="arch-diagram">
+        <div class="arch-node">
+          <div class="tag">Layer · 01</div>
+          <h4>User Interface</h4>
+          <p>Guided questionnaire with visual selection plus a localised NLP text-box that maps colloquial terms to formal medical entities.</p>
+        </div>
+        <div class="arch-node">
+          <div class="tag">Layer · 02</div>
+          <h4>Working Memory</h4>
+          <p>Session-scoped fact base. Symptoms accumulate as the dialogue progresses; new facts are added whenever the engine asks for clarification.</p>
+        </div>
+        <div class="arch-node accent">
+          <div class="tag">Layer · 03 · Core</div>
+          <h4>Knowledge Base</h4>
+          <p>~100 IF-THEN production rules elicited from the SME, each annotated with a Certainty Factor reflecting expert confidence.</p>
+        </div>
+      </div>
+
+      <div class="arch-flow-vertical">
+        <div class="arch-step">
+          <div class="n">Step 01</div>
+          <h5>Data elicitation</h5>
+          <p>User inputs initial primary symptoms via the UI.</p>
+        </div>
+        <div class="arch-step">
+          <div class="n">Step 02</div>
+          <h5>Fact mapping</h5>
+          <p>Colloquial terms translated to standard medical entities in Working Memory.</p>
+        </div>
+        <div class="arch-step">
+          <div class="n">Step 03</div>
+          <h5>Initial inference</h5>
+          <p>Engine scans the KB; multiple rules partially trigger on "itchy + red".</p>
+        </div>
+        <div class="arch-step">
+          <div class="n">Step 04</div>
+          <h5>Dynamic querying</h5>
+          <p>UI generates follow-up questions to narrow active rules.</p>
+        </div>
+        <div class="arch-step">
+          <div class="n">Step 05</div>
+          <h5>Final resolution</h5>
+          <p>Once CF ≥ 0.80, the engine stops chaining.</p>
+        </div>
+        <div class="arch-step" style="background: var(--accent-soft); border-color: var(--accent);">
+          <div class="n" style="color: var(--accent);">Step 06</div>
+          <h5>Triage output</h5>
+          <p>Diagnosis + explanation + recommended action.</p>
+        </div>
+      </div>
+
+      <div style="position: relative; z-index: 2; margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="arch-node">
+          <div class="tag">Layer · 04</div>
+          <h4>Inference Engine</h4>
+          <p>Forward-chaining rule engine (Python / Drools-style). Starts from initial symptoms, fires applicable rules, deduces new facts, and iterates until a goal is reached.</p>
+        </div>
+        <div class="arch-node">
+          <div class="tag">Layer · 05 · Trust</div>
+          <h4>Explanation Facility</h4>
+          <p>Answers "Why?" and "How?" by tracing back fired rules into a human-readable justification — every conclusion is auditable.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rule-box">
+      <span class="lbl">Knowledge Base · Sample Rule</span>
+<span class="com">; Rule R-007 — Atopic Dermatitis (Eczema)</span>
+<span class="kw">IF</span>   (symptom <span class="kw">=</span> <span class="str">"redness"</span>)
+<span class="kw">AND</span>  (symptom <span class="kw">=</span> <span class="str">"itching"</span>)
+<span class="kw">AND</span>  (symptom <span class="kw">=</span> <span class="str">"dry-patches"</span>)
+<span class="kw">AND</span>  (location <span class="kw">=</span> <span class="str">"flexural-creases"</span>)
+<span class="kw">AND</span>  (chronicity <span class="kw">&gt;</span> <span class="str">"6 weeks"</span>)
+<span class="kw">THEN</span> (diagnosis <span class="kw">=</span> <span class="str">"Atopic Dermatitis"</span>)
+     (certainty-factor <span class="kw">=</span> <span class="str">0.85</span>)
+     (action <span class="kw">=</span> <span class="str">"emollients + low-potency topical steroid; refer if severe"</span>)</div>
+  </div>
+</section>
+
+<!-- ============ 07 IMPLEMENTATION ============ -->
+<section id="implementation">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="index">§ 07 / Implementation</div>
+      <div>
+        <div class="eyebrow">Selection &amp; mastery of tools</div>
+        <h2>A deliberately lightweight, transparent stack.</h2>
+        <p class="lede">
+          Dermatology diagnosis depends on observable symptoms, condition matching, and
+          decision rules — a perfect fit for a rule-based architecture. We pair a clean
+          web UI with a Python inference engine.
+        </p>
+      </div>
+    </div>
+
+    <table class="impl-table">
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Tool / Technology</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="component">Frontend / UI</td>
+          <td class="tool">HTML, CSS, JavaScript</td>
+          <td class="purpose">Interactive interface for symptom input and diagnosis display.</td>
+        </tr>
+        <tr>
+          <td class="component">Backend Logic</td>
+          <td class="tool">Python</td>
+          <td class="purpose">Diagnosis pipeline and system orchestration.</td>
+        </tr>
+        <tr>
+          <td class="component">Knowledge Base</td>
+          <td class="tool">Rule-based IF-THEN</td>
+          <td class="purpose">Stores dermatology symptoms and disease knowledge as production rules.</td>
+        </tr>
+        <tr>
+          <td class="component">Inference Engine</td>
+          <td class="tool">Forward Chaining</td>
+          <td class="purpose">Generates diagnosis from user symptoms via data-driven reasoning.</td>
+        </tr>
+        <tr>
+          <td class="component">Storage</td>
+          <td class="tool">JSON · Python dict</td>
+          <td class="purpose">Disease rules and symptom mappings — easily versioned and extended.</td>
+        </tr>
+        <tr>
+          <td class="component">Dev Platform</td>
+          <td class="tool">VS Code</td>
+          <td class="purpose">Coding and project development environment.</td>
+        </tr>
+        <tr>
+          <td class="component">Version Control</td>
+          <td class="tool">GitHub</td>
+          <td class="purpose">Collaboration, branching, and version history for the team.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="impl-advantages">
+      <div class="impl-adv">
+        <div class="num">01</div>
+        <h5>Easy to implement &amp; maintain</h5>
+        <p>Production rules are inspectable, editable, and reviewable by non-programmers.</p>
+      </div>
+      <div class="impl-adv">
+        <div class="num">02</div>
+        <h5>Symptom-fit</h5>
+        <p>The diagnostic domain is naturally rule-shaped — symptoms + history → conclusion.</p>
+      </div>
+      <div class="impl-adv">
+        <div class="num">03</div>
+        <h5>Extensible</h5>
+        <p>New diseases or symptoms are added by appending rules, not retraining models.</p>
+      </div>
+      <div class="impl-adv">
+        <div class="num">04</div>
+        <h5>Transparent reasoning</h5>
+        <p>Every conclusion can be traced back to the rules that fired to produce it.</p>
+      </div>
+      <div class="impl-adv">
+        <div class="num">05</div>
+        <h5>Lightweight</h5>
+        <p>No GPU. No model weights. Runs comfortably on a basic laptop or web server.</p>
+      </div>
+      <div class="impl-adv">
+        <div class="num">06</div>
+        <h5>Pedagogically valuable</h5>
+        <p>Reasoning steps are readable — perfect for teaching KRR concepts in WIA2001.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 08 GANTT ============ -->
+<section id="gantt">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="index">§ 08 / Project Planner</div>
+      <div>
+        <div class="eyebrow">Roles &amp; timeline</div>
+        <h2>Thirteen weeks, six people, one prototype.</h2>
+        <p class="lede">
+          Each phase is owned by one role and shadowed by another. PM keeps the cadence;
+          DE and KE front-load the elicitation; the programmer compounds across the middle.
+        </p>
+      </div>
+    </div>
+
+    <div class="gantt">
+      <div class="gantt-header">
+        <span class="first">Task</span>
+        <span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span><span>W9</span><span>W10</span><span>W11</span><span>W12</span><span>W13</span>
+      </div>
+
+      <div class="gantt-row">
+        <div class="task">Project kick-off &amp; role assignment <span class="owner">PM · all</span></div>
+        <div class="gantt-cell fill"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task">Literature review &amp; SDG framing <span class="owner">DE · KE</span></div>
+        <div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task">Expert outreach &amp; approval <span class="owner">KE · PM</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task">Knowledge elicitation interviews <span class="owner">KE · DE</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task">End-user requirements <span class="owner">EU · KE</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell fade"></div><div class="gantt-cell fill"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task">KB design (rule schema, CF) <span class="owner">DE · Pr</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task">Inference engine implementation <span class="owner">Pr</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task">UI / questionnaire build <span class="owner">Pr · EU</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell fade"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task">Explanation facility <span class="owner">Pr · DE</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task">Expert validation &amp; rule tuning <span class="owner">DE · KE</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task">End-user usability testing <span class="owner">EU · PM</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task">Slide report &amp; documentation <span class="owner">PM · all</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell fade"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task"><b style="color: var(--ink);">▶ Milestone — Report submission</b> <span class="owner">Week 11 · Mon</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell milestone"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task">Presentation rehearsal &amp; recording <span class="owner">all</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell fill"></div><div class="gantt-cell fill"></div>
+      </div>
+      <div class="gantt-row">
+        <div class="task"><b style="color: var(--ink);">▶ Milestone — Demo &amp; presentation</b> <span class="owner">Week 13 · Mon</span></div>
+        <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell milestone"></div>
+      </div>
+    </div>
+
+    <div style="margin-top: 32px; display: flex; gap: 32px; flex-wrap: wrap; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-3); letter-spacing: 0.06em;">
+      <span><span style="display: inline-block; width: 14px; height: 10px; background: var(--accent); vertical-align: middle; margin-right: 6px;"></span>ACTIVE</span>
+      <span><span style="display: inline-block; width: 14px; height: 10px; background: oklch(0.78 0.04 165); vertical-align: middle; margin-right: 6px;"></span>RAMP / OVERFLOW</span>
+      <span><span style="display: inline-block; width: 10px; height: 10px; background: var(--ink); transform: rotate(45deg); vertical-align: middle; margin-right: 6px;"></span>MILESTONE</span>
+      <span>PM&nbsp;Project Manager</span>
+      <span>KE&nbsp;Knowledge Engineer</span>
+      <span>DE&nbsp;Domain Expert</span>
+      <span>Pr&nbsp;Programmer</span>
+      <span>EU&nbsp;End-User Rep</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 09 TESTING ============ -->
+<section id="testing">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="index">§ 09 / Testing</div>
+      <div>
+        <div class="eyebrow">Verification, validation, usability</div>
+        <h2>Three layers of evidence.</h2>
+        <p class="lede">
+          The system is tested by what the rules do, by what the expert says, and by what
+          end-users can actually accomplish with it.
+        </p>
+      </div>
+    </div>
+
+    <div class="testing-grid">
+      <div class="test-card">
+        <div class="lbl">T · 01 · Verification</div>
+        <h4>Rules vs. truth.</h4>
+        <p>Run curated test cases against expert-validated diagnoses. Target: &gt;80% accuracy on common conditions. Track top-1 and top-3 differential hit rates.</p>
+      </div>
+      <div class="test-card">
+        <div class="lbl">T · 02 · Validation</div>
+        <h4>Expert review.</h4>
+        <p>The consulting dermatologist reviews system outputs across a curated case sheet — agreement is measured by Kappa, with disagreements fed back into rule tuning.</p>
+      </div>
+      <div class="test-card">
+        <div class="lbl">T · 03 · Usability</div>
+        <h4>End-users in the loop.</h4>
+        <p>Students, GPs, and simulated patients run real sessions. Feedback collected via survey: ease, usefulness, clarity. Target SUS score &gt;78/100.</p>
+      </div>
+      <div class="test-card">
+        <div class="lbl">T · 04 · Methodology</div>
+        <h4>Black-box + sensitivity.</h4>
+        <p>Black-box tests confirm input → output mapping; sensitivity analysis probes how the system degrades under partial, ambiguous, or contradictory symptom input.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 RESULTS ============ -->
+<section id="results">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="index">§ 10 / Discussion &amp; Results</div>
+      <div>
+        <div class="eyebrow">Anticipated outcomes</div>
+        <h2>Comparable to literature — and far more explainable.</h2>
+        <p class="lede">
+          ~80–120 production rules cover 10–12 common skin conditions. Forward chaining
+          with Certainty Factors handles symptom uncertainty without collapsing into
+          overconfidence.
+        </p>
+      </div>
+    </div>
+
+    <div class="results-grid">
+      <div class="result-stat">
+        <div class="num">82<span class="unit">– 91%</span></div>
+        <div class="lbl">Top-3 differential accuracy</div>
+        <p>On 50+ curated test cases validated by the consulting dermatologist. Comparable to Jeddi (2016) and Atim (2025).</p>
+      </div>
+      <div class="result-stat">
+        <div class="num">78<span class="unit">+</span></div>
+        <div class="lbl">Avg. SUS usability score</div>
+        <p>From 15–20 end-users including students, GPs, and simulated patients. Clarity and explanation rated highest.</p>
+      </div>
+      <div class="result-stat">
+        <div class="num">100<span class="unit">%</span></div>
+        <div class="lbl">Decisions explained</div>
+        <p>Every diagnosis includes the chain of fired rules — a property modern black-box systems cannot match by design.</p>
+      </div>
+      <div class="result-stat">
+        <div class="num">~100</div>
+        <div class="lbl">Production rules in KB</div>
+        <p>Built collaboratively by the DE and KE; reviewed and tuned during expert validation workshops.</p>
+      </div>
+    </div>
+
+    <div class="sl-grid">
+      <div class="sl-block s">
+        <h4>Strengths</h4>
+        <ul>
+          <li><span class="mk">+</span><span>High transparency and interpretability compared to black-box deep learning models.</span></li>
+          <li><span class="mk">+</span><span>Low computational requirements — runs in low-resource clinical settings.</span></li>
+          <li><span class="mk">+</span><span>Strong educational value through detailed explanations and self-care guidance.</span></li>
+          <li><span class="mk">+</span><span>Direct SDG 3 alignment — early detection, reduced specialist load, patient empowerment.</span></li>
+          <li><span class="mk">+</span><span>Certainty Factors prevent the over-confidence that plagued early ES designs.</span></li>
+        </ul>
+      </div>
+      <div class="sl-block l">
+        <h4>Limitations</h4>
+        <ul>
+          <li><span class="mk">−</span><span>Primarily text-based symptom input; integrated image analysis is future work.</span></li>
+          <li><span class="mk">−</span><span>Limited scope — rare or complex dermatoses may yield lower-confidence outputs.</span></li>
+          <li><span class="mk">−</span><span>Potential bias if the consulting expert's experience is regionally narrow.</span></li>
+          <li><span class="mk">−</span><span>No real-time clinical validation on live patients yet.</span></li>
+          <li><span class="mk">−</span><span>Knowledge base must be manually maintained; no continuous learning from usage.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="prose" style="margin-top: 64px; max-width: 80ch;">
+      <p class="nodrop" style="font-family: 'Newsreader', serif; font-size: 22px; line-height: 1.5; color: var(--ink); font-weight: 300; text-wrap: pretty;">
+        DermDiag ES proves that classical expert-system methodologies remain highly
+        relevant in the era of deep learning. While image-based AI achieves superior
+        performance on visual classification, rule-based systems like ours excel in
+        <em style="color: var(--accent);">accessibility, explainability, and clinical-history integration</em>
+        — factors crucial for primary care and patient education.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 FUTURE ============ -->
+<section id="future">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="index">§ 11 / Future &amp; Conclusion</div>
+      <div>
+        <div class="eyebrow">What comes next</div>
+        <h2>Eight roads from prototype to product.</h2>
+        <p class="lede">
+          The prototype is the foundation. Each enhancement below moves the system
+          closer to real-world deployment without abandoning the explainable core.
+        </p>
+      </div>
+    </div>
+
+    <div class="future-grid">
+      <div class="future-card">
+        <div class="num">01</div>
+        <div>
+          <h4>Multimodal integration</h4>
+          <p>Incorporate pre-trained CNNs (ResNet, EfficientNet, or dermatology-specific models) for lesion image analysis — combining visual features with symptom rules for higher accuracy.</p>
+        </div>
+      </div>
+      <div class="future-card">
+        <div class="num">02</div>
+        <div>
+          <h4>Mobile application</h4>
+          <p>Cross-platform mobile app (Flutter or React Native) with offline functionality for rural and remote users.</p>
+        </div>
+      </div>
+      <div class="future-card">
+        <div class="num">03</div>
+        <div>
+          <h4>Expanded knowledge base</h4>
+          <p>Scale coverage to 30+ conditions including paediatric dermatology, systemic skin manifestations, and tropical dermatoses prevalent in the region.</p>
+        </div>
+      </div>
+      <div class="future-card">
+        <div class="num">04</div>
+        <div>
+          <h4>Advanced uncertainty</h4>
+          <p>Add Bayesian networks, fuzzy logic, or Dempster-Shafer theory alongside ML for adaptive rule weighting based on real usage data.</p>
+        </div>
+      </div>
+      <div class="future-card">
+        <div class="num">05</div>
+        <div>
+          <h4>Telemedicine integration</h4>
+          <p>Generate structured reports for sharing with dermatologists; integrate with electronic health record (EHR) systems.</p>
+        </div>
+      </div>
+      <div class="future-card">
+        <div class="num">06</div>
+        <div>
+          <h4>Personalisation &amp; fairness</h4>
+          <p>Fitzpatrick skin-tone adaptation and explicit bias-mitigation to improve performance across diverse populations.</p>
+        </div>
+      </div>
+      <div class="future-card">
+        <div class="num">07</div>
+        <div>
+          <h4>Clinical validation</h4>
+          <p>Run formal clinical trials, obtain ethical approvals, and pursue certification as a clinical decision-support tool.</p>
+        </div>
+      </div>
+      <div class="future-card">
+        <div class="num">08</div>
+        <div>
+          <h4>Multilingual support</h4>
+          <p>Expand interface and explanations to additional languages — Bahasa Malaysia, Mandarin, Tamil, Arabic — for global accessibility.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="conclusion">
+      <div>
+        <div class="lbl">Conclusion</div>
+        <div class="serif" style="font-size: 32px; margin-top: 10px; line-height: 1.05; color: #ece6db; letter-spacing: -0.02em;">A foundation, not a finish line.</div>
+      </div>
+      <div>
+        <p>
+          DermDiag ES is a successful implementation of core Knowledge Representation
+          and Reasoning principles in a high-impact healthcare domain. Rule-based
+          representation, forward chaining, Certainty Factors and an intuitive UI
+          together deliver a <em>practical, transparent, and educational</em> triage tool.
+        </p>
+        <p>
+          The project directly serves <em>SDG 3</em> by improving access to quality health
+          information, supporting early intervention, and reducing the burden on
+          overwhelmed healthcare systems. It empowers community practitioners and
+          patients in underserved areas.
+        </p>
+        <p>
+          Beyond a course deliverable, DermDiag ES highlights the enduring value of
+          symbolic AI: combining human expert knowledge with systematic reasoning
+          produces trustworthy, explainable outcomes that modern black-box models
+          still struggle to match.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REFERENCES ============ -->
+<section id="references" class="refs">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="index">§ R / References</div>
+      <div>
+        <div class="eyebrow">Cited works</div>
+        <h2>Where the literature review draws from.</h2>
+      </div>
+    </div>
+
+    <ol>
+      <li><span class="n">01</span><span>American Academy of Dermatology. (n.d.). <i>Skin conditions</i>. aad.org/public/diseases</span></li>
+      <li><span class="n">02</span><span>Atim, S. B., et al. (2025). Rule-based expert system model with backward chaining algorithm for symptom-based skin disease diagnosis. <i>Journal of Technology and System</i>.</span></li>
+      <li><span class="n">03</span><span>Esteva, A., Kuprel, B., Novoa, R. A., Ko, J., Swetter, S. M., Blau, H. M., &amp; Thrun, S. (2017). Dermatologist-level classification of skin cancer with deep neural networks. <i>Nature</i>, 542(7639), 115–118.</span></li>
+      <li><span class="n">04</span><span>Fitzpatrick, T. B., et al. (Eds.). (2019). <i>Fitzpatrick's dermatology</i> (9th ed.). McGraw-Hill Education.</span></li>
+      <li><span class="n">05</span><span>Jeddi, F. R., Arabfard, M., &amp; Arabfard, M. (2016). The diagnostic value of skin disease diagnosis expert system. <i>Journal of Health Management &amp; Informatics</i>, 3(1), 1–6.</span></li>
+      <li><span class="n">06</span><span>Li, D., et al. (2025). Global burden of viral skin diseases from 1990 to 2021. <i>PMC</i>.</span></li>
+      <li><span class="n">07</span><span>Malla Zhunio, K. P., Vicente Zapata, E. S., &amp; Montaluisa Yugla, F. J. (2020). Expert system for the pre-diagnosis of skin diseases. <i>International Journal of Machine Learning and Computing</i>, 10(1), 81–86.</span></li>
+      <li><span class="n">08</span><span>Munaiseche, C. P. C., Runtuwene, J. P. A., Rantung, V. P., Rorimpandey, G. C., Sangkop, F. I., &amp; Rompas, P. T. D. (2020). Expert system implementation for the diagnosis of skin diseases using forward chaining method. <i>Proc. ICSTE</i>.</span></li>
+      <li><span class="n">09</span><span>Naser, S. S. A., &amp; Akkila, A. N. (2009). A proposed expert system for skin diseases diagnosis. <i>INSInet Publication</i>.</span></li>
+      <li><span class="n">10</span><span>United Nations. (n.d.). <i>Sustainable Development Goals</i>. sdgs.un.org/goals</span></li>
+      <li><span class="n">11</span><span>Venkatesh, K. P., et al. (2024). Learnings from the first AI-enabled skin cancer device for primary care. <i>JMIR Dermatology</i>.</span></li>
+      <li><span class="n">12</span><span>VisualDx. (n.d.). <i>DermExpert FAQs</i>. visualdx.com</span></li>
+      <li><span class="n">13</span><span>World Health Organization. (n.d.). <i>Skin diseases</i>. who.int/health-topics/skin-diseases</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom: 14px;">
+          <span class="brand-mark"></span>
+          <span>DermDiag<span style="color: var(--ink-3); font-weight: 300;"> · ES</span></span>
+        </div>
+        <p>A rule-based expert system prototype for the preliminary triage of common dermatological conditions.</p>
+      </div>
+      <div>
+        <h5>Course</h5>
+        <ul>
+          <li>WIA2001 — KRR</li>
+          <li>Semester 2 · 2025/2026</li>
+          <li>Lecturer · Dr. Shapla Khanam</li>
+          <li>Group OCC 10</li>
+        </ul>
+      </div>
+      <div>
+        <h5>Roles</h5>
+        <ul>
+          <li>PM · Project Manager</li>
+          <li>DE · Domain Expert</li>
+          <li>KE · Knowledge Engineer</li>
+          <li>Pr · Programmer</li>
+          <li>EU · End-User Rep</li>
+        </ul>
+      </div>
+      <div>
+        <h5>SDG Alignment</h5>
+        <ul>
+          <li>Goal 3 · Good Health &amp; Well-being</li>
+          <li>Target 3.8 — universal health coverage</li>
+          <li>Target 3.d — health risk reduction</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 · Group OCC 10 · Faculty of Computer Science &amp; Information Technology</span>
+      <span>EDUCATIONAL PROTOTYPE — NOT FOR CLINICAL USE</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Smooth scroll for in-page nav (no behavior surprises)
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (!el) return;
+      e.preventDefault();
+      const y = el.getBoundingClientRect().top + window.pageYOffset - 64;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>
